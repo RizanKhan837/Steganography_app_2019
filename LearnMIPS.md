@@ -243,4 +243,69 @@ sw = store word from reg into mem // sw $12, 0xFFF8($13) or sw $12, -8($13)
 lui $13, 0x0004 => lw immidiate
 ori (fills in the lower 16bits)
 -ori $13, $13, 0x5000 => upper half same and OR for the other
--ori $10, $0, 0x00C4 => replaces bits with the zero-extended immediate operand
+-ori $10, $0, 0x00C4 => replaces bits with the zero-extended immediate 
+
+EXAMPLE:
+	#SAVE AND RESTORE REGISTER WITH STACK
+	#addi $sp, $sp, -4 // add $s0 to the fct with load stack 
+	#sw $s0, 0($sp)
+	#addi $s0, $s0, 30
+	#li $v0, 1
+	#move $a0, $s0
+	#syscall
+	#lw $s0, 0($sp) // restore value of the stack
+	#addi $sp, $sp, 4
+	
+	#NESTED FUNCTION JAL WORKS
+	#addi $sp, $sp, -4 #// add $s0 to the fct with load stack 
+	#sw $ra, 0($sp)
+	##ADD FUNCTION HERE
+	#lw $ra, 0($sp) #// restore value of the stack
+	#addi $sp, $sp, 4
+	
+	# beq(=) / sle(<=) / bge(>=) / blt(<) / bgtz(> 0)
+	
+	#WHILE
+	#li $t0, 0
+	#while:
+	 #bgt $t0, 10 exit
+	 #addi $t0, $t0, 1 # i++
+	 #j while
+	#exit:
+	
+	##ARRAY (name: .space n)
+    # sw assign value / get elem
+	#li $t0, 0
+	#sw $s0 array($t0) (assign value to the pos)
+	#	addi $t0, $t0, 4 (pos++) // this how we add element
+	#lw $t1, array($zero) //  load element at pos 0 to the temp $t1
+	#while: 
+	#	beq $t0, 12(size of tab), exit
+	#	lw $t1, array($t0)
+	#	li $v0, $t1
+	#	move $a0, $t1
+	#	syscall
+	#	addi $t0, $t0, 4
+	#	j while
+	#exit:
+	
+	#sw $v0, nameVar (work with a .data var) // save the return value into the variable
+	#lw $a0, namevar // load the var into the arg 0
+	
+	### COUNTING LETTER
+	#loop:
+	# beq $t0, $a1, exit #while $t0 < $a1 
+	# add $t1, $a0, $t0 # assign at $t1 the adress of the array $a0 at $t0 (t1 = &A[i])
+	# lb $t2, 0($t1) #because its a char 'lb'=> load byte for the offset 0 of the adress $t1 (t2 = A[i] 
+	# bne $t2, $a0, skip
+	# add $v1, $v1, 1
+	# skip:
+	# add $t0, $t0, 1
+	# j loop
+	# exit:
+	# jr $ra
+	
+#malloc:                 # procédure d'allocation dynamique
+#        li $v0, 9       # appel système n. 9 
+#        syscall         # alloue une taille a0 et
+#        j  $ra          # retourne le pointeur dans v0
