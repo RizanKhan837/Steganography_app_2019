@@ -54,6 +54,7 @@ main:
 	jal stringLength #go to the function for counting letter of the string to encode
 	move $s2, $v1 #save the return value of the size of the string to encode
 
+
 	jal stringToArray #go to the function string to arrat
 
 	jal arrayCharToArrayBit #go to the function char to array bit
